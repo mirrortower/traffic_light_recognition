@@ -1,0 +1,517 @@
+layer {
+	name: "featuremap_data"
+	type: "FeaturemapData"
+	top: "res2c_predict_conv7"
+	top: "label"
+	top: "bbox"
+	#top: "whole_data"
+
+	include: {phase: TEST}
+
+  	data_param {
+    	#source: "D:/tlr_featuremap/multi_focal1_2_56000/"
+    	source: "D:/tlr_featuremap/deconv_focal4_4_62000/"
+    	#source: "D:/tlr_featuremap/deconv_innerpool_2_106000/"
+    	#source: "D:/tlr_featuremap/deconv_innerpool_2_62000/"
+    	#source: "D:/tlr_featuremap/deconv_wfl_2_62000/"
+    	#source: "D:/tlr_featuremap/deconv_wfl_1_72000/"
+    	#source: "E:/tlr_featuremap_2/nobn_train1_87000/"
+    	#source: "E:/tlr_featuremap_2/nobn_innerconv_train1_72000/"
+    	#ource: "D:/tlr_featuremap/deconv_nonfocal_2_146000/"
+    	#source: "E:/tlr_featuremap_2/nobn_innerconv_train4_201000/"
+
+    	batch_size: 1
+    	backend: LMDB
+  	}
+}
+
+layer {
+	name: "data"
+	type: "BaseImgBBoxData"
+	top: "whole_data"
+	top: "gt"
+
+	include: {phase: TEST}
+
+	data_param {
+    	source: "D:/DB/traffic_light/bosch/lmdb/bosch_test/"
+    	batch_size: 1
+    	backend: LMDB
+  	}
+}
+
+#layer {
+#	name: "data"
+#	type: "SubwinData"
+#	top: "data"
+#	top: "label_bosch"
+#	top: "bbox_bosch"
+#	top: "whole_data"
+#
+#	include: {phase: TEST}
+#
+#  	data_param {
+#    	source: "D:/DB/traffic_light/bosch/lmdb/bosch_test/"
+#    	batch_size: 1
+#    	backend: LMDB
+#  	}
+#
+#  	subwin_offset_param {
+#  		global_detection: true
+#
+#  		win_size {
+#  			width: 224
+#  			height: 224
+#  		}
+#
+#  		win_offset {
+#  			x: 0
+#  			y: 0
+#  		}
+#  		win_offset {
+#  			x: 211
+#  			y: 0
+#  		}
+#  		win_offset {
+#  			x: 422
+#  			y: 0
+#  		}
+#  		win_offset {
+#  			x: 633
+#  			y: 0
+#  		}
+#  		win_offset {
+#  			x: 844
+#  			y:0
+#  		}
+#  		win_offset {
+#  			x: 1055
+#  			y: 0
+#  		}
+#  		win_offset {
+#  			x: 0
+#  			y: 211
+#  		}
+#  		win_offset {
+#  			x: 211
+#  			y: 211
+#  		}
+#  		win_offset {
+#  			x: 422
+#  			y: 211
+#  		}
+#  		win_offset {
+#  			x: 633
+#  			y: 211
+#  		}
+#  		win_offset {
+#  			x: 844
+#  			y: 211
+#  		}
+#  		win_offset {
+#  			x: 1055
+#  			y: 211
+#  		}
+#
+#  	}
+#}
+layer {
+	name: "silence_input"
+	type: "Silence"
+	#bottom: "data"
+	#bottom: "label_bosch"
+	#bottom: "bbox_bosch"
+	bottom: "gt"
+
+	include: {phase: TEST}
+}
+
+
+###############################################################
+layer {
+	name: "yolov2_result_8"
+	type: "YOLOV2Result"
+	bottom: "res2c_predict_conv7"
+	top: "detection_label"
+	top: "detection_box"
+	top: "detection_conf"
+
+	yolo_v2_result_param {
+		cell_size {
+			width: 4
+			height: 4
+		}
+
+		num_class: 4
+
+		anchor {
+			top_left {
+				x: 0
+				y: -2
+			}
+			size {
+				width: 4
+				height: 8
+			}
+		}
+
+		anchor {
+			top_left {
+				x: -2
+				y: -6
+			}
+			size {
+				width: 8
+				height: 16
+			}
+		}
+		anchor {
+			top_left {
+				x: -6
+				y: -14
+			}
+			size {
+				width: 16
+				height: 32
+			}
+		}
+		anchor {
+			top_left {
+				x: -10
+				y: -22
+			}
+			size {
+				width: 24
+				height: 48
+			}
+		}
+
+#		anchor {
+#			top_left {
+#				x: -1
+#				y: -5.5
+#			}
+#			size {
+#				width: 6
+#				height: 15
+#			}
+#		}
+#
+#		anchor {
+#			top_left {
+#				x: -6
+#				y: -18
+#			}
+#			size {
+#				width: 16
+#				height: 40
+#			}
+#		}
+#		anchor {
+#			top_left {
+#				x: -10
+#				y: -27
+#			}
+#			size {
+#				width: 24
+#				height: 60
+#			}
+#		}
+
+
+		num_detection: 1024
+		nms_overlap_threshold: 0.1
+		conf_threshold: 0.6
+		do_nms: false
+
+		anchor_weight: [1, 1, 1, 1];
+		#anchor_weight: [1, 1, 0.6];
+	}
+
+	subwin_offset_param {
+  		global_detection: true
+ 		#
+  		win_size {
+  			width: 224
+  			height: 224
+  		}
+
+  		win_offset {
+  			x: 0
+  			y: 0
+  		}
+  		win_offset {
+  			x: 211
+  			y: 0
+  		}
+  		win_offset {
+  			x: 422
+  			y: 0
+  		}
+  		win_offset {
+  			x: 633
+  			y: 0
+  		}
+  		win_offset {
+  			x: 844
+  			y: 0
+  		}
+  		win_offset {
+  			x: 1055
+  			y: 0
+  		}
+  		win_offset {
+  			x: 0
+  			y: 211
+  		}
+  		win_offset {
+  			x: 211
+  			y: 211
+  		}
+  		win_offset {
+  			x: 422
+  			y: 211
+  		}
+  		win_offset {
+  			x: 633
+  			y: 211
+  		}
+  		win_offset {
+  			x: 844
+  			y: 211
+  		}
+  		win_offset {
+  			x: 1055
+  			y: 211
+  		}
+
+  	}
+}
+
+layer {
+	name: "detection_check"
+	type: "DetectionCheck"
+	bottom: "detection_label"
+	bottom: "detection_box"
+	bottom: "detection_conf"
+	bottom: "whole_data"
+	bottom: "label"
+	bottom: "bbox"
+
+	#include: { phase: TRAIN}
+
+	detection_check_param {
+		#eval_performance: true
+		draw: true
+		#detection_conf: 0.5
+		iou_threshold: 0.3
+		#log_path: "D:/detection_log/multiscale/train_5/13/all"
+		#log_path: "D:/detection_log/multiscale/train_5/5_3/30/3_all"
+		log_path: "D:/detection_log/deconv4/loc_reject3/3_all"
+
+		do_nms: true
+		nms_overlap_threshold: 0.1
+	}
+}
+
+#layer {
+#	name: "silence_yolo_result"
+#	type: "Silence"
+#
+#  	#include: { phase: TEST}
+#
+#	#bottom: "detection_label"
+#	#bottom: "detection_box"
+#	#bottom: "detection_conf"
+#	bottom: "detection_label_32"
+#	bottom: "detection_box_32"
+#	bottom: "detection_conf_32"
+#}
+
+
+#####################################################################################################
+
+layer {
+	name: "width5px_filter_gt"
+	type: "SizeRejection"
+	bottom: "label"
+	bottom: "bbox"
+	top: "label_5px"
+	top: "bbox_5px"
+
+	size_rejection_param {
+		w_min: 5
+	}
+}
+
+
+#layer {
+#	name: "width5px_filter_detection"
+#	type: "SizeRejection"
+#	bottom: "detection_label"
+#	bottom: "detection_box"
+#	bottom: "detection_conf"
+#	top: "detection_label_5px"
+#	top: "detection_box_5px"
+#	top: "detection_conf_5px"
+#
+#	size_rejection_param {
+#		w_min: 5
+#	}
+#}
+
+layer {
+	name: "detection_check_5px"
+	type: "DetectionCheck"
+	bottom: "detection_label"
+	bottom: "detection_box"
+	bottom: "detection_conf"
+	bottom: "whole_data"
+	bottom: "label_5px"
+	bottom: "bbox_5px"
+
+	#include: { phase: TRAIN}
+
+	detection_check_param {
+		#eval_performance: true
+		draw: false
+		#detection_conf: 0.5
+		iou_threshold: 0.3
+		#log_path: "D:/detection_log/multiscale/train_5/13/5px"
+		#log_path: "D:/detection_log/multiscale/train_5/5_3/30/3_5px"
+		log_path: "D:/detection_log/deconv4/loc_reject3/3_5px"
+
+		do_nms: true
+		nms_overlap_threshold: 0.1
+	}
+}
+
+
+#########################################################################################
+
+layer {
+	name: "width10px_filter_gt"
+	type: "SizeRejection"
+	bottom: "label"
+	bottom: "bbox"
+	top: "label_10px"
+	top: "bbox_10px"
+
+	size_rejection_param {
+		w_min: 10
+	}
+}
+
+
+#layer {
+#	name: "width10px_filter_detection"
+#	type: "SizeRejection"
+#	bottom: "detection_label"
+#	bottom: "detection_box"
+#	bottom: "detection_conf"
+#	top: "detection_label_10px"
+#	top: "detection_box_10px"
+#	top: "detection_conf_10px"
+#
+#	size_rejection_param {
+#		w_min: 10
+#	}
+#}
+
+layer {
+	name: "detection_check_10px"
+	type: "DetectionCheck"
+	bottom: "detection_label"
+	bottom: "detection_box"
+	bottom: "detection_conf"
+	bottom: "whole_data"
+	bottom: "label_10px"
+	bottom: "bbox_10px"
+
+	#include: { phase: TRAIN}
+
+	detection_check_param {
+		#eval_performance: true
+		draw: false
+		#detection_conf: 0.5
+		iou_threshold: 0.3
+		log_path: "D:/detection_log/deconv4/loc_reject3/3_10px"
+
+		do_nms: true
+		nms_overlap_threshold: 0.1
+	}
+}
+
+###############################################################
+
+layer {
+	name: "detection_check_5_all"
+	type: "DetectionCheck"
+	bottom: "detection_label"
+	bottom: "detection_box"
+	bottom: "detection_conf"
+	bottom: "whole_data"
+	bottom: "label"
+	bottom: "bbox"
+
+	#include: { phase: TRAIN}
+
+	detection_check_param {
+		#eval_performance: true
+		draw: false
+		#detection_conf: 0.5
+		iou_threshold: 0.5
+		#log_path: "D:/detection_log/multiscale/train_5/5_3/30/5_all"
+		log_path: "D:/detection_log/deconv4/loc_reject3/5_all"
+
+		do_nms: true
+		nms_overlap_threshold: 0.1
+	}
+}
+layer {
+	name: "detection_check_5_5px"
+	type: "DetectionCheck"
+	bottom: "detection_label"
+	bottom: "detection_box"
+	bottom: "detection_conf"
+	bottom: "whole_data"
+	bottom: "label_5px"
+	bottom: "bbox_5px"
+
+	#include: { phase: TRAIN}
+
+	detection_check_param {
+		#eval_performance: true
+		draw: false
+		#detection_conf: 0.5
+		iou_threshold: 0.5
+		#log_path: "D:/detection_log/multiscale/train_5/5_3/30/5_5px"
+		log_path: "D:/detection_log/deconv4/loc_reject3/5_5px"
+
+		do_nms: true
+		nms_overlap_threshold: 0.1
+	}
+}
+layer {
+	name: "detection_check_5_10px"
+	type: "DetectionCheck"
+	bottom: "detection_label"
+	bottom: "detection_box"
+	bottom: "detection_conf"
+	bottom: "whole_data"
+	bottom: "label_10px"
+	bottom: "bbox_10px"
+
+	#include: { phase: TRAIN}
+
+	detection_check_param {
+		#eval_performance: true
+		draw: false
+		#detection_conf: 0.5
+		iou_threshold: 0.5
+		log_path: "D:/detection_log/deconv4/loc_reject3/5_10px"
+
+		do_nms: true
+		nms_overlap_threshold: 0.1
+	}
+}
